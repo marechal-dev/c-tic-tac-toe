@@ -1,56 +1,46 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-#define NUMBER_ROWS 3
-#define NUMBER_COLUMNS 3
+#include "tictactoe.h"
 
-char game_grid[NUMBER_ROWS][NUMBER_COLUMNS] =
+char gameGrid[NUMBER_ROWS][NUMBER_COLUMNS] =
 {
   {' ', ' ', ' '},
   {' ', ' ', ' '},
   {' ', ' ', ' '}
 };
 
-int choice, player;
-
-int check_for_win();
-int check_free_spaces();
-void display_board();
-void mark_board(char mark, int x, int y);
+int choice, currentPlayer;
 
 int main()
 {
-  int game_status;
-  player = 1;
+  int gameStatus;
+  currentPlayer = 1;
 
-  char mark;
+  char currentPlayerMark;
   
   do
   {
-    int x, y;
-    display_board();
+    int inputX, inputY;
+    displayBoard();
 
-    player = (player % 2) ? 1 : 2;
+    currentPlayer = (currentPlayer % 2) ? 1 : 2;
 
-    printf("Player %d, enter coordinates:\n", player);
-    printf("X (rows, 1-3): ");
-    scanf("%d", &x);
-    printf("Y (column, 1-3): ");
-    scanf("%d", &y);
-    printf("\n");
+    handlePlayerInput(&inputX, &inputY);
 
-    mark = player == 1 ? 'X' : 'O';
+    currentPlayerMark = currentPlayer == 1 ? 'X' : 'O';
 
-    mark_board(mark, x, y);
+    markBoard(currentPlayerMark, inputX, inputY);
 
-    game_status = check_for_win();
+    gameStatus = checkWinCondition();
 
-    player++;
+    currentPlayer++;
 
-  } while (game_status == -1);
+  } while (gameStatus == -1);
 
-  if (game_status == 1)
+  if (gameStatus == 1)
   {
-    printf("Player %d wins!", --player);
+    printf("Player %d wins!", --currentPlayer);
   } else {
     printf("Game draw!");
   }
@@ -58,7 +48,16 @@ int main()
   return 0;
 }
 
-void display_board()
+void handlePlayerInput(int* x, int* y) {
+  printf("Player %d, enter coordinates:\n", currentPlayer);
+  printf("X (rows, 1-3): ");
+  scanf("%d", x);
+  printf("Y (column, 1-3): ");
+  scanf("%d", y);
+  printf("\n");
+}
+
+void displayBoard()
 {
   printf("X| 1 | 2 | 3 |\n");
   for (int i = 0; i < NUMBER_ROWS; i++)
@@ -66,9 +65,9 @@ void display_board()
     printf(
       "%d| %c | %c | %c |\n", 
       (i+1), 
-      game_grid[i][0], 
-      game_grid[i][1], 
-      game_grid[i][2]
+      gameGrid[i][0], 
+      gameGrid[i][1], 
+      gameGrid[i][2]
     );
   }
   printf("\n");
@@ -81,15 +80,16 @@ void display_board()
 * 1 for victory
 * -1 for board not full and game still running 
 */
-int check_for_win() {
-  if (check_free_spaces() != 0)
+int checkWinCondition() {
+  bool boardIsNotFull = checkBoardFreeSpaces() != 0 ? true : false;
+
+  if (boardIsNotFull)
   {
-    // Check Rows
     for (int i = 0; i < NUMBER_ROWS; i++)
     {
-      if (game_grid[i][0] == game_grid[i][1] && game_grid[i][0] == game_grid[i][2])
+      if (gameGrid[i][0] == gameGrid[i][1] && gameGrid[i][0] == gameGrid[i][2])
       {
-        if (game_grid[i][0] != ' ' && game_grid[i][1] != ' ' && game_grid[i][2] != ' ')
+        if (gameGrid[i][0] != ' ' && gameGrid[i][1] != ' ' && gameGrid[i][2] != ' ')
         {
           return 1;
         }
@@ -99,9 +99,9 @@ int check_for_win() {
     // Check Colums
     for (int i = 0; i < NUMBER_ROWS; i++)
     {
-      if (game_grid[0][i] == game_grid[1][i] && game_grid[0][i] == game_grid[2][i])
+      if (gameGrid[0][i] == gameGrid[1][i] && gameGrid[0][i] == gameGrid[2][i])
       {
-        if (game_grid[0][i] != ' ' && game_grid[1][i] != ' ' && game_grid[2][i] != ' ')
+        if (gameGrid[0][i] != ' ' && gameGrid[1][i] != ' ' && gameGrid[2][i] != ' ')
         {
           return 1;
         }
@@ -109,16 +109,16 @@ int check_for_win() {
     }
 
     // Check grid diagonals
-    if (game_grid[0][0] == game_grid[1][1] && game_grid[0][0] == game_grid[2][2])
+    if (gameGrid[0][0] == gameGrid[1][1] && gameGrid[0][0] == gameGrid[2][2])
     {
-      if (game_grid[0][0] != ' ' && game_grid[1][1] != ' ' && game_grid[2][2] != ' ')
+      if (gameGrid[0][0] != ' ' && gameGrid[1][1] != ' ' && gameGrid[2][2] != ' ')
       {
         return 1;
       }
     }
-    if (game_grid[0][2] == game_grid[1][1] && game_grid[0][2] == game_grid[2][0])
+    if (gameGrid[0][2] == gameGrid[1][1] && gameGrid[0][2] == gameGrid[2][0])
     {
-      if (game_grid[0][2] != ' ' && game_grid[1][1] != ' ' && game_grid[2][0] != ' ')
+      if (gameGrid[0][2] != ' ' && gameGrid[1][1] != ' ' && gameGrid[2][0] != ' ')
       {
         return 1;
       }
@@ -130,14 +130,14 @@ int check_for_win() {
   }
 };
 
-int check_free_spaces() {
+int checkBoardFreeSpaces() {
   int free_spaces = 9;
 
   for (int i = 0; i < NUMBER_ROWS; i++)
   {
     for (int j = 0; j < NUMBER_COLUMNS; j++)
     {
-      if (game_grid[i][j] != ' ')
+      if (gameGrid[i][j] != ' ')
       {
         free_spaces--;
       }
@@ -147,16 +147,28 @@ int check_free_spaces() {
   return free_spaces;
 }
 
-void mark_board(char mark, int x, int y)
+void markBoard(char currentPlayerMark, int boardX, int boardY)
 {
-  if (x > NUMBER_ROWS || y > NUMBER_ROWS)
-  {
-    printf("Invalid move.\n");
+  if (boardX > 3) {
+    printf("Invalid X position\n");
     return;
-  } else {
-    game_grid[x-1][y-1] = mark;
+  } else if (boardY > 3) {
+    printf("Invlid Y position\n");
+    return;
   }
 
+  if (boardX > NUMBER_ROWS || boardY > NUMBER_ROWS)
+  {
+    printf("Invalid move: Position is out of scope\n");
+    return;
+  }
+
+  if (gameGrid[boardX-1][boardY-1] != ' ') {
+    printf("Invalid move: Position is already filled\n");
+    return;
+  }
+
+  gameGrid[boardX-1][boardY-1] = currentPlayerMark;
   return;
 };
 
