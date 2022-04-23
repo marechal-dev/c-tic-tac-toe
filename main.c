@@ -3,8 +3,7 @@
 
 #include "tictactoe.h"
 
-char gameGrid[NUMBER_ROWS][NUMBER_COLUMNS] =
-{
+char globalGameGrid[NUMBER_ROWS][NUMBER_COLUMNS] = {
   {' ', ' ', ' '},
   {' ', ' ', ' '},
   {' ', ' ', ' '}
@@ -12,15 +11,13 @@ char gameGrid[NUMBER_ROWS][NUMBER_COLUMNS] =
 
 int choice, currentPlayer;
 
-int main()
-{
+int main() {
   int gameStatus;
   currentPlayer = 1;
 
   char currentPlayerMark;
   
-  do
-  {
+  do {
     int inputX, inputY;
     displayBoard();
 
@@ -38,8 +35,7 @@ int main()
 
   } while (gameStatus == -1);
 
-  if (gameStatus == 1)
-  {
+  if (gameStatus == 1) {
     printf("Player %d wins!", --currentPlayer);
   } else {
     printf("Game draw!");
@@ -57,69 +53,59 @@ void handlePlayerInput(int* x, int* y) {
   printf("\n");
 }
 
-void displayBoard()
-{
+void displayBoard() {
+  const char* rowFormat = "%d| %c | %c | %c |\n";
+
   printf("X| 1 | 2 | 3 |\n");
-  for (int i = 0; i < NUMBER_ROWS; i++)
-  {
+  for (int i = 0; i < NUMBER_ROWS; i++) {
     printf(
-      "%d| %c | %c | %c |\n", 
+      rowFormat, 
       (i+1), 
-      gameGrid[i][0], 
-      gameGrid[i][1], 
-      gameGrid[i][2]
+      globalGameGrid[i][0], 
+      globalGameGrid[i][1], 
+      globalGameGrid[i][2]
     );
   }
   printf("\n");
 }
 
 /*
-* Function that check if player won
+* Function that check if a player won
 * Returns:
-* 0 for draw
+* 0 for game draw
 * 1 for victory
 * -1 for board not full and game still running 
 */
 int checkWinCondition() {
   bool boardIsNotFull = checkBoardFreeSpaces() != 0 ? true : false;
 
-  if (boardIsNotFull)
-  {
-    for (int i = 0; i < NUMBER_ROWS; i++)
-    {
-      if (gameGrid[i][0] == gameGrid[i][1] && gameGrid[i][0] == gameGrid[i][2])
-      {
-        if (gameGrid[i][0] != ' ' && gameGrid[i][1] != ' ' && gameGrid[i][2] != ' ')
-        {
+  if (boardIsNotFull) {
+    // Loop and check rows
+    for (int i = 0; i < NUMBER_ROWS; i++) {
+      if (globalGameGrid[i][0] == globalGameGrid[i][1] && globalGameGrid[i][0] == globalGameGrid[i][2]) {
+        if (globalGameGrid[i][0] != ' ' && globalGameGrid[i][1] != ' ' && globalGameGrid[i][2] != ' ') {
           return 1;
         }
       }
     }
 
-    // Check Colums
-    for (int i = 0; i < NUMBER_ROWS; i++)
-    {
-      if (gameGrid[0][i] == gameGrid[1][i] && gameGrid[0][i] == gameGrid[2][i])
-      {
-        if (gameGrid[0][i] != ' ' && gameGrid[1][i] != ' ' && gameGrid[2][i] != ' ')
-        {
+    // Loop and check colums
+    for (int i = 0; i < NUMBER_ROWS; i++) {
+      if (globalGameGrid[0][i] == globalGameGrid[1][i] && globalGameGrid[0][i] == globalGameGrid[2][i]) {
+        if (globalGameGrid[0][i] != ' ' && globalGameGrid[1][i] != ' ' && globalGameGrid[2][i] != ' ') {
           return 1;
         }
       }
     }
 
     // Check grid diagonals
-    if (gameGrid[0][0] == gameGrid[1][1] && gameGrid[0][0] == gameGrid[2][2])
-    {
-      if (gameGrid[0][0] != ' ' && gameGrid[1][1] != ' ' && gameGrid[2][2] != ' ')
-      {
+    if (globalGameGrid[0][0] == globalGameGrid[1][1] && globalGameGrid[0][0] == globalGameGrid[2][2]) {
+      if (globalGameGrid[0][0] != ' ' && globalGameGrid[1][1] != ' ' && globalGameGrid[2][2] != ' ') {
         return 1;
       }
     }
-    if (gameGrid[0][2] == gameGrid[1][1] && gameGrid[0][2] == gameGrid[2][0])
-    {
-      if (gameGrid[0][2] != ' ' && gameGrid[1][1] != ' ' && gameGrid[2][0] != ' ')
-      {
+    if (globalGameGrid[0][2] == globalGameGrid[1][1] && globalGameGrid[0][2] == globalGameGrid[2][0]) {
+      if (globalGameGrid[0][2] != ' ' && globalGameGrid[1][1] != ' ' && globalGameGrid[2][0] != ' ') {
         return 1;
       }
     }
@@ -130,45 +116,50 @@ int checkWinCondition() {
   }
 };
 
+/**
+ * Loops through the board and 
+ * returns a integers representing the remaining
+ * free spaces on it.
+ */
 int checkBoardFreeSpaces() {
-  int free_spaces = 9;
+  int totalFreeSpaces = 9;
 
-  for (int i = 0; i < NUMBER_ROWS; i++)
-  {
-    for (int j = 0; j < NUMBER_COLUMNS; j++)
-    {
-      if (gameGrid[i][j] != ' ')
-      {
-        free_spaces--;
+  for (int i = 0; i < NUMBER_ROWS; i++) {
+    for (int j = 0; j < NUMBER_COLUMNS; j++) {
+      if (globalGameGrid[i][j] != ' ') {
+        totalFreeSpaces -= 1;
       }
     }
   }
 
-  return free_spaces;
+  return totalFreeSpaces;
 }
 
+/**
+ * Marks a board space.
+ * Takes as arguments a char representing the current player mark and
+ * two integers representing the board coordinates (x, y).
+ */ 
 void markBoard(char currentPlayerMark, int boardX, int boardY)
 {
   if (boardX > 3) {
     printf("Invalid X position\n");
     return;
   } else if (boardY > 3) {
-    printf("Invlid Y position\n");
+    printf("Invalid Y position\n");
     return;
   }
 
-  if (boardX > NUMBER_ROWS || boardY > NUMBER_ROWS)
-  {
+  if (boardX > NUMBER_ROWS || boardY > NUMBER_COLUMNS) {
     printf("Invalid move: Position is out of scope\n");
     return;
   }
 
-  if (gameGrid[boardX-1][boardY-1] != ' ') {
+  if (globalGameGrid[boardX-1][boardY-1] != ' ') {
     printf("Invalid move: Position is already filled\n");
     return;
   }
 
-  gameGrid[boardX-1][boardY-1] = currentPlayerMark;
+  globalGameGrid[boardX-1][boardY-1] = currentPlayerMark;
   return;
 };
-
